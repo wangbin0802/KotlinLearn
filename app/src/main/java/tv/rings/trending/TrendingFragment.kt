@@ -3,6 +3,7 @@ package tv.rings.trending
 import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
+import android.graphics.ImageFormat
 import android.hardware.Camera
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
@@ -11,6 +12,7 @@ import android.view.SurfaceHolder
 import kotlinx.android.synthetic.main.fragment_trending.*
 import tv.rings.BaseFragment
 import tv.rings.kotlinloops.app.R
+import tv.rings.util.DeviceUtil
 import java.io.IOException
 import java.util.*
 import kotlin.Comparator
@@ -60,12 +62,12 @@ class TrendingFragment : BaseFragment(), SurfaceHolder.Callback {
     private fun initCamera() {
         try {
             camera = Camera.open()
-            val parameters = camera?.parameters
-            parameters?.setRecordingHint(true)
-            camera?.setParameters(parameters)
-            setPreviewSize(camera!!, 720, 1280)
-            setPictureSize(camera!!, 720, 1280)
             camera?.setDisplayOrientation(90)
+            val parameters = camera?.parameters
+            setPreviewSize(camera!!, DeviceUtil.getDeviceWidth(activity!!), DeviceUtil.getDeviceHeight(activity!!))
+            parameters?.focusMode = Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE
+            parameters?.previewFormat = ImageFormat.NV21
+            camera?.parameters = parameters
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -95,7 +97,7 @@ class TrendingFragment : BaseFragment(), SurfaceHolder.Callback {
         camera.parameters = parameters
     }
 
-    fun setPreviewSize(camera: Camera, expectWidth: Int, expectHeight: Int) {
+    private fun setPreviewSize(camera: Camera, expectWidth: Int, expectHeight: Int) {
         val parameters = camera.parameters
         val size = calculatePerfectSize(parameters.supportedPreviewSizes,
                 expectWidth, expectHeight)
@@ -110,7 +112,7 @@ class TrendingFragment : BaseFragment(), SurfaceHolder.Callback {
      * @param expectHeight
      * @return
      */
-    fun calculatePerfectSize(sizes: List<Camera.Size>, expectWidth: Int,
+    private fun calculatePerfectSize(sizes: List<Camera.Size>, expectWidth: Int,
                              expectHeight: Int): Camera.Size {
         sortList(sizes) // 根据宽度进行排序
         var result: Camera.Size = sizes[0]
