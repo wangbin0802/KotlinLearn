@@ -3,11 +3,12 @@ package tv.rings.trending
 import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
-import android.graphics.ImageFormat
+import android.graphics.*
 import android.hardware.Camera
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.util.Log
 import android.view.SurfaceHolder
 import kotlinx.android.synthetic.main.fragment_trending.*
 import tv.rings.BaseFragment
@@ -17,7 +18,11 @@ import java.io.IOException
 import java.util.*
 import kotlin.Comparator
 
-class TrendingFragment : BaseFragment(), SurfaceHolder.Callback {
+class TrendingFragment : BaseFragment(), SurfaceHolder.Callback, Camera.PreviewCallback {
+    override fun onPreviewFrame(byteArray: ByteArray?, camera: Camera?) {
+        Log.w(TAG, "onPreviewFrame byteArray:" + byteArray.toString())
+    }
+
     override fun surfaceChanged(surfaceHolder: SurfaceHolder?, p1: Int, p2: Int, p3: Int) {
         surfaceHolder?.let { startPreview(it) }
     }
@@ -28,6 +33,16 @@ class TrendingFragment : BaseFragment(), SurfaceHolder.Callback {
 
     override fun surfaceCreated(p0: SurfaceHolder?) {
         initCamera()
+    }
+
+    private fun paintSurface() {
+        val surface = surfaceView.holder.surface
+        val rect = Rect(0, 0, 400, 400)
+        val canvas: Canvas = surface.lockCanvas(rect)
+        val paint = Paint()
+        paint.color = Color.RED
+        canvas.drawRect(rect, paint)
+        surface.unlockCanvasAndPost(canvas)
     }
 
     private var camera: Camera? = null
@@ -68,6 +83,7 @@ class TrendingFragment : BaseFragment(), SurfaceHolder.Callback {
             parameters?.focusMode = Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE
             parameters?.previewFormat = ImageFormat.NV21
             camera?.parameters = parameters
+            camera?.setPreviewCallback(this)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -169,6 +185,7 @@ class TrendingFragment : BaseFragment(), SurfaceHolder.Callback {
     private fun releaseCamera() {
         try {
             camera?.stopPreview()
+            camera?.setPreviewCallback(null)
             camera?.release()
         } catch (e: Exception) {
             e.printStackTrace()
