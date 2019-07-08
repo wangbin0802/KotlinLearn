@@ -10,10 +10,10 @@ import tv.rings.subscription.OnViewChange
  */
 object DataBindingAttrsUtils {
     @JvmStatic
-    @BindingAdapter(value = ["onEvent", "onChange"], requireAll = false)
-    fun onEvent(releaseBtn: Button, productT: ProductRelease, onViewChange: OnViewChange) {
+    @BindingAdapter(value = ["onEvent", "onChange"], requireAll = false) // onEvent, onChange和xml里面bind:onEvent,bind:onChange，名字相对应
+    fun onEvent(releaseBtn: Button, product: ProductRelease, onViewChange: OnViewChange) { // product, onViewChange传递@{对象}
         releaseBtn.setOnClickListener {
-            onViewChange.onProductInfoChange("Release info:${productT.country}, ${productT.date}, ${productT.version}")
+            onViewChange.onProductInfoChange("Release info:${product.country}, ${product.date}, ${product.version}")
         }
     }
 }
